@@ -1,0 +1,879 @@
+
+### CHEF Fundamentals ###
+
+John Fitzpatrick
+
+Policy-driven
+
+Infrastructure as Code (easy to migrate / mirror)
+
+Design Tenets
+
+Fundamental building blocks: Resources & Recipies
+
+Recipies are Executed in Order
+
+Avoid storing content on recipies
+
+Cookbook: distribution unit
+
+
+### Executables ###
+
+chef-apply: directly apply recipies
+chef: create repo, generate cookbooks/templates
+chef-client: apply cookbooks
+
+
+### Commands ###
+
+sudo chef-apply -e "package 'vim'"
+
+[hello.rb]
+file "/etc/motd" do
+#  Doesn't touch the file iff existing
+#  action :create_if_missing
+  action :create
+  content "Hello, world!\n"
+  mode "00644"
+  owner "root"
+  group "chef"
+  backup false
+end
+
+$ sudo chef-apply hello.rb
+
+
+
+$ chef generate repo chef-repo -p
+
+$ tree chef-repo
+chef-repo
+├── certificates
+│   └── README.md
+├── chefignore
+├── config
+│   └── rake.rb
+├── cookbooks
+│   └── README.md
+├── data_bags
+│   └── README.md
+├── environments
+│   └── README.md
+├── LICENSE
+├── Rakefile
+├── README.md
+└── roles
+    └── README.md
+
+$ cd chef-repo
+$ chef generate cookbook cookbooks/myapache
+$ tree /home/chef/chef-repo/cookbooks/myapache
+/home/chef/chef-repo/cookbooks/myapache
+├── Berksfile
+├── chefignore
+├── metadata.rb
+├── README.md
+├── recipes
+│   └── default.rb
+├── spec
+│   ├── spec_helper.rb
+│   └── unit
+│       └── recipes
+│           └── default_spec.rb
+└── test
+    └── integration
+        └── default
+            └── serverspec
+                ├── default_spec.rb
+                └── spec_helper.rb
+8 directories, 9 files
+
+$ chef generate template cookbooks/myapache index.html
+$ tree templates
+templates
+└── default
+    └── index.html.erb
+1 directory, 1 file
+
+
+$ sudo chef-client --local-mode -r "recipe[myapache::default]"
+$ sudo chef-client --local-mode -r "recipe[myapache]"
+
+$ cat git.rb 
+# git recipe
+
+package "git" do
+  action :install
+end
+
+file "/home/chef/chef-repo/.gitconfig" do
+  content "[user]\n  name = John Doe\n  email = jdoe@example.com\n"
+  user "chef"
+  group "chef"
+end
+
+$ sudo chef-apply git.rb
+
+$ cd chef-repo
+$ git init
+$ git add .
+$ git commit -m 'Initial commit'
+
+$ cd cookbooks/myapache/
+$ kitchen driver discover
+$ kitchen init --driver=kitchen-docker
+$ kitchen list
+$ kitchen create
+$ kitchen destroy
+$ kitchen create
+$ kitchen converge
+
+$ kitchen verify
+
+$ kitchen test
+
+
+
+The Node Object / Ohai
+
+$ ohai memory
+$ ohai memory
+
+
+$ sudo chef-client -z -r "recipe[myapache]"
+
+$ chef generate attribute cookbooks/myapache/ default
+
+
+### CHEF Server ###
+
+Create jdros account on manage.chef.io (managed chef server)
+
+NOTE: every time you download the starter-kit, your credentials are reset!
+
+// Locally:
+$ chef-apply get_chef-repo.rb
+\=> chef-repo cloned locally
+
+// Get Starter kit from my own account / chef.io
+$ unzip chef-starter.zip chef-repo/.chef/*
+
+jd@uxps ~/src/chef-training/chef-repo 16:28
+$ knife client list
+lazyscientists-validator
+
+$ knife cookbook upload myapache
+$ knife cookbook list
+myapache   0.2.0
+
+// From my workstation
+$ knife bootstrap 52.4.83.140 --sudo -x chef -P chef -N "mynode" -r "recipe[myapache]"
+Doing old-style registration with the validation key at /home/jd/src/chef-training/chef-repo/.chef/lazyscientists-validator.pem...
+Delete your validation key in order to use your user credentials instead
+
+Connecting to 52.4.83.140
+52.4.83.140 Installing Chef Client...
+52.4.83.140 --2015-05-28 08:21:04--  https://www.opscode.com/chef/install.sh
+52.4.83.140 Resolving www.opscode.com... 166.78.227.233
+52.4.83.140 Connecting to www.opscode.com|166.78.227.233|:443... connected.
+52.4.83.140 HTTP request sent, awaiting response... 200 OK
+52.4.83.140 Length: 18736 (18K) [application/x-sh]
+52.4.83.140 Saving to: `STDOUT'
+52.4.83.140 
+100%[======================================>] 18,736      --.-K/s   in 0.005s  
+52.4.83.140 
+52.4.83.140 2015-05-28 08:21:04 (3.27 MB/s) - written to stdout [18736/18736]
+52.4.83.140 
+52.4.83.140 Downloading Chef 12 for el...
+52.4.83.140 downloading https://www.opscode.com/chef/metadata?v=12&prerelease=false&nightlies=false&p=el&pv=6&m=x86_64
+52.4.83.140   to file /tmp/install.sh.5920/metadata.txt
+52.4.83.140 trying wget...
+52.4.83.140 url	https://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-12.3.0-1.el6.x86_64.rpm
+52.4.83.140 md5	c19fefcb3d033107e9fbdb3839312584
+52.4.83.140 sha256	4b7c846a9ad93564cc203a5ac99890431f7d6ad159c424aa89827fd772c9881d
+52.4.83.140 downloaded metadata file looks valid...
+52.4.83.140 downloading https://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-12.3.0-1.el6.x86_64.rpm
+52.4.83.140   to file /tmp/install.sh.5920/chef-12.3.0-1.el6.x86_64.rpm
+52.4.83.140 trying wget...
+52.4.83.140 Comparing checksum with sha256sum...
+52.4.83.140 Installing Chef 12
+52.4.83.140 installing with rpm...
+52.4.83.140 warning: /tmp/install.sh.5920/chef-12.3.0-1.el6.x86_64.rpm: Header V4 DSA/SHA1 Signature, key ID 83ef826a: NOKEY
+52.4.83.140 Preparing...                ########################################### [100%]
+52.4.83.140    1:chef                   ########################################### [100%]
+52.4.83.140 Thank you for installing Chef!
+52.4.83.140 Starting first Chef Client run...
+52.4.83.140 Starting Chef Client, version 12.3.0
+52.4.83.140 Creating a new client identity for mynode using the validator key.
+52.4.83.140 resolving cookbooks for run list: ["myapache"]
+52.4.83.140 Synchronizing Cookbooks:
+52.4.83.140   - myapache
+52.4.83.140 Compiling Cookbooks...
+52.4.83.140 Converging 3 resources
+52.4.83.140 Recipe: myapache::default
+52.4.83.140   * yum_package[httpd] action install
+52.4.83.140     - install version 2.2.15-39.el6.centos of package httpd
+52.4.83.140   * template[/var/www/html/index.html] action create
+52.4.83.140     - create new file /var/www/html/index.html
+52.4.83.140     - update content in file /var/www/html/index.html from none to c900aa
+52.4.83.140     --- /var/www/html/index.html	2015-05-28 08:21:29.156989644 +0000
+52.4.83.140     +++ /tmp/chef-rendered-template20150528-5988-1uj88xe	2015-05-28 08:21:29.156989644 +0000
+52.4.83.140     @@ -1 +1,6 @@
+52.4.83.140     +<h1>Hello, Chefs!</h1>
+52.4.83.140     +
+52.4.83.140     +<p>
+52.4.83.140     +  This is a centos 6.5 server with 604488kB RAM.
+52.4.83.140     +</p>
+52.4.83.140     - change mode from '' to '0777'
+52.4.83.140   * service[httpd] action enable
+52.4.83.140     - enable service service[httpd]
+52.4.83.140   * service[httpd] action start
+52.4.83.140     - start service service[httpd]
+52.4.83.140 
+52.4.83.140 Running handlers:
+52.4.83.140 Running handlers complete
+52.4.83.140 Chef Client finished, 4/4 resources updated in 14.742578946 seconds
+
+How to get the latest CHEF (client version)
+[ copied from the logs of 'knife bootstrap' ]
+https://www.opscode.com/chef/metadata?v=12&prerelease=false&nightlies=false&p=el&pv=6&m=x86_64
+
+
+$ knife node list
+mynode
+
+$ knife client list
+lazyscientists-validator
+mynode
+
+$ knife node show mynode
+Node Name:   mynode
+Environment: _default
+FQDN:        ip-172-31-19-42.ec2.internal
+IP:          52.4.83.140
+Run List:    recipe[myapache]
+Roles:       
+Recipes:     myapache, myapache::default
+Platform:    centos 6.5
+Tags:        
+
+// Long list
+$ knife node show mynode -l
+
+// In JSON
+$ knife node show mynode -Fj
+
+// Long + in JSON
+$ knife node show mynode -Fj -l
+
+$ knife node run_list set mynode "recipe[myapache]"
+mynode:
+  run_list: recipe[myapache]
+
+$ knife node run_list show mynode
+
+$ knife node show mynode
+Node Name:   mynode
+Environment: _default
+FQDN:        ip-172-31-19-42.ec2.internal
+IP:          52.4.83.140
+Run List:    recipe[myapache]
+Roles:       
+Recipes:     myapache, myapache::default
+Platform:    centos 6.5
+Tags:        
+
+// Get specific node information
+$ knife node show mynode -a fqdn
+mynode:
+  fqdn: ip-172-31-19-42.ec2.internal
+
+$ knife node show mynode -a fqdn -Fj
+{
+  "mynode": {
+    "fqdn": "ip-172-31-19-42.ec2.internal"
+  }
+}
+
+
+
+### CHEF Client ###
+
+build node => authenticate => sync cookbooks =>
+  => converge =>
+  + success: node.save \
+  + fail: exception    / => ruby handlers
+
+
+Possible problem(s) between client / server:
++ time-differnece issue: ntp should be running between node & server
++ node_name/client.pem missmatch
+
+
+$ knife search INDEX SEARCH_QUERY	# SOLR syntax!-)
+
+$ knife search node "*:*"
+$ knife search node "platform*:centos"
+$ knife searcg node "ipaddress:172.*"
+$ knife searcg node "ipaddress:172.* AND ..."
+
+$ knife searcg node "ipaddress:172.*" -a cloud.public_ipv4
+
+
+http://bit.ly/1doTuOA
+https://gist.github.com/johnfitzpatrick/1933b718190a00e894ae
+
+// Update index.html.erb, myapache::default.rb and
+// metadata.rb; then:
+$ knife cookbook upload myapache
+
+
+// Cookbook Supermarket (SSO with manage.chef.io)
+https://supermarket.chef.io
+
+$ knife cookbook site download haproxy
+$ tar -zxvf haproxy-1.6.6.tar.gz -C cookbooks
+// Dependencies
+$ knife cookbook site download build-essential
+$ knife cookbook site download cpu
+$ for i in *.gz; do tar -xvf $i -C cookbooks && mv $i ..; done
+
+$ for i in cpu build-essential haproxy; do knife cookbook upload $i;done
+
+$ knife cookbook list
+build-essential   2.2.3
+cpu               0.2.0
+haproxy           1.6.6
+myapache          0.3.1
+
+$ knife node run_list add mynode "recipe[haproxy]"
+mynode:
+  run_list:
+    recipe[myapache]
+    recipe[haproxy]
+
+// NOTE: order matters!
+
+// Port conflict between apache & haproxy
+$ chef generate template cookbooks/myapache httpd.conf
+
+Wrapper Cookbooks
+$ chef generate cookbook cookbooks/myhaproxy
+http://bit.ly/1QcqJk7
+https://gist.github.com/johnfitzpatrick/c5829efc9c2e6fe7391d
+
+$ knife node run_list remove mynode "recipe[haproxy]"
+mynode:
+  run_list: recipe[myapache]
+
+$ knife node run_list add mynode "recipe[myhaproxy]"
+mynode:
+  run_list:
+    recipe[myapache]
+    recipe[myhaproxy]
+
+// 
+$ knife cookbook upload myhaproxy
+
+// Client Cookbook & Dependencies
+$ knife cookbook site download chef-client 4.3.0
+$ knife cookbook upload chef-client
+\=> fail!
+
+
+Berkshelf / Dependency Manager for Cookbooks
+
+$ wget https://github.com/opscode-cookbooks/chef-client/archive/master.zip
+$ unzip master.zip -d .../cookbooks
+
+$ cat Berksfile
+source 'https://supermarket.chef.io'
+
+metadata
+
+group :integration do
+  cookbook 'runit'
+  cookbook 'apt'
+  cookbook 'chef-server', '>= 3.0.0'
+end
+
+$ cd chef-client && berks install
+
+$ cat Berksfile.lock 
+DEPENDENCIES
+  apt
+  chef-client
+    path: .
+    metadata: true
+  chef-server (>= 3.0.0)
+  runit
+
+GRAPH
+  apt (2.7.0)
+  chef-client (4.3.0)
+    cron (>= 1.2.0)
+    logrotate (>= 1.2.0)
+    windows (~> 1.11)
+  chef-server (3.1.1)
+    chef-server-ingredient (>= 0.0.0)
+  chef-server-ingredient (0.3.2)
+    packagecloud (>= 0.0.0)
+  chef_handler (1.1.9)
+  cron (1.6.1)
+  logrotate (1.9.1)
+  packagecloud (0.0.18)
+  runit (1.6.0)
+    packagecloud (>= 0.0.0)
+  windows (1.37.0)
+    chef_handler (>= 0.0.0)
+
+
+// Cookbooks end up undeer ~/.berkshelf/cookbooks
+$ berks upload		# Uploads only the needed ones!
+
+$ berks upload
+Uploaded apt (2.7.0) to: 'https://api.opscode.com:443/organizations/lazyscientists'
+Uploaded chef-client (4.3.0) to: 'https://api.opscode.com:443/organizations/lazyscientists'
+Uploaded chef-server (3.1.1) to: 'https://api.opscode.com:443/organizations/lazyscientists'
+Uploaded chef-server-ingredient (0.3.2) to: 'https://api.opscode.com:443/organizations/lazyscientists'
+Uploaded chef_handler (1.1.9) to: 'https://api.opscode.com:443/organizations/lazyscientists'
+Uploaded cron (1.6.1) to: 'https://api.opscode.com:443/organizations/lazyscientists'
+Uploaded logrotate (1.9.1) to: 'https://api.opscode.com:443/organizations/lazyscientists'
+Uploaded packagecloud (0.0.18) to: 'https://api.opscode.com:443/organizations/lazyscientists'
+Uploaded runit (1.6.0) to: 'https://api.opscode.com:443/organizations/lazyscientists'
+Uploaded windows (1.37.0) to: 'https://api.opscode.com:443/organizations/lazyscientists'
+
+$ knife cookbook list
+apt                      2.7.0
+build-essential          2.2.3
+chef-client              4.3.0
+chef-server              3.1.1
+chef-server-ingredient   0.3.2
+chef_handler             1.1.9
+cpu                      0.2.0
+cron                     1.6.1
+haproxy                  1.6.6
+logrotate                1.9.1
+myapache                 0.4.2
+myhaproxy                0.1.0
+packagecloud             0.0.18
+runit                    1.6.0
+windows                  1.37.0
+
+
+$ knife node run_list set mynode "recipe[myapache], recipe[myhaproxy], recipe[chef-client::delete_validation], recipe[chef-client]"
+mynode:
+  run_list:
+    recipe[myapache]
+    recipe[myhaproxy]
+    recipe[chef-client::delete_validation]
+    recipe[chef-client]
+
+54.152.55.247
+
+
+HAProxy to LB 2 x webservers that are automatically pulled from the Server
+
+Own haproxy, due to bug on the community cookbook
+https://gist.githubusercontent.com/johnfitzpatrick/a1b7a3194d8c388b7b1f/raw/39fe5d3090cb3b2ec274444f019e32661db2f604/default.rb
+
+$ chef generate template cookbooks/myhaproxy haproxy.cfg
+https://gist.github.com/anonymous/49e66aad89bd16f9b32d
+
+$ chef generate attribute cookbooks/myhaproxy default
+$ cat cookbooks/myhaproxy/attributes/default.rb
+default['myhaproxy']['incoming_port'] = 80
+
+// Create the WebServer role file:
+$ cat roles/webserver.rb 
+name "webserver"
+description "WebServer"
+run_list "recipe[myapache]"
+default_attributes({
+  "myapache" => {
+    "port" => "8080"
+  }
+})
+
+$ knife role from file webserver.rb
+// or 'knife upload role webserver'
+
+$ knife role show webserver
+chef_type:           role
+default_attributes:
+  myapache:
+    port: 8080
+description:         WebServer
+env_run_lists:
+json_class:          Chef::Role
+name:                webserver
+override_attributes:
+run_list:            recipe[myapache]
+
+$ cat roles/loadbalancer.rb
+name "loadbalancer"
+description "Load Balancer"
+run_list "recipe[myhaproxy]"
+
+$ knife role from file loadbalancer.rb
+Updated Role loadbalancer!
+
+$ knife role show loadbalancer
+chef_type:           role
+default_attributes:
+description:         Load Balancer
+env_run_lists:
+json_class:          Chef::Role
+name:                loadbalancer
+override_attributes:
+run_list:            recipe[myhaproxy]
+
+
+Best Practices: have "base" roles
+$ cat roles/base.rb
+name "base"
+description "Base Server Role"
+run_list "recipe[chef-client::delete_validation]", "recipe[chef-client]"
+
+$ knife role from file base.rb
+Updated Role base!
+
+// Update all roles to include the base
+$ grep base roles/webserver.rb roles/loadbalancer.rb 
+roles/webserver.rb:run_list "role[base]", "recipe[myapache]"
+roles/loadbalancer.rb:run_list "role[base]", "recipe[myhaproxy]"
+
+NOTE: pure ruby is running during the execute fase, not during converge fase
+
+$ knife role from file *.rb
+$ knife role from file base.rb webserver.rb loadbalancer.rb
+Updated Role base!
+Updated Role webserver!
+Updated Role loadbalancer!
+
+$ knife upload cookbook myapache
+$ knife bootstrap 54.152.55.247 --sudo -x chef -P chef -N "mywebnode1" -r "role[webserver]"
+Doing old-style registration with the validation key at /home/jd/src/chef-training/chef-repo/.chef/lazyscientists-validator.pem...
+Delete your validation key in order to use your user credentials instead
+
+Connecting to 54.152.55.247
+54.152.55.247 Starting first Chef Client run...
+54.152.55.247 Starting Chef Client, version 12.3.0
+54.152.55.247 resolving cookbooks for run list: ["chef-client::delete_validation", "chef-client", "myapache"]
+54.152.55.247 Synchronizing Cookbooks:
+54.152.55.247   - chef_handler
+54.152.55.247   - cron
+54.152.55.247   - chef-client
+54.152.55.247   - windows
+54.152.55.247   - logrotate
+54.152.55.247   - myapache
+54.152.55.247 Compiling Cookbooks...
+54.152.55.247 Converging 13 resources
+54.152.55.247 Recipe: chef-client::delete_validation
+54.152.55.247   * file[/etc/chef/validation.pem] action delete
+54.152.55.247     - delete file /etc/chef/validation.pem
+54.152.55.247 Recipe: chef-client::init_service
+54.152.55.247   * directory[/var/run/chef] action create
+54.152.55.247     - create new directory /var/run/chef
+54.152.55.247     - change owner from '' to 'root'
+54.152.55.247     - change group from '' to 'root'
+54.152.55.247   * directory[/var/cache/chef] action create
+54.152.55.247     - create new directory /var/cache/chef
+54.152.55.247     - change owner from '' to 'root'
+54.152.55.247     - change group from '' to 'root'
+54.152.55.247   * directory[/var/lib/chef] action create
+54.152.55.247     - create new directory /var/lib/chef
+54.152.55.247     - change owner from '' to 'root'
+54.152.55.247     - change group from '' to 'root'
+54.152.55.247   * directory[/var/log/chef] action create
+54.152.55.247     - create new directory /var/log/chef
+54.152.55.247     - change mode from '' to '0755'
+54.152.55.247     - change owner from '' to 'root'
+54.152.55.247     - change group from '' to 'root'
+54.152.55.247   * directory[/etc/chef] action create (up to date)
+54.152.55.247   * template[/etc/init.d/chef-client] action create
+54.152.55.247     - create new file /etc/init.d/chef-client
+54.152.55.247     - update content in file /etc/init.d/chef-client from none to f352ec
+54.152.55.247     --- /etc/init.d/chef-client	2015-05-28 13:34:36.233695345 +0000
+54.152.55.247     +++ /tmp/chef-rendered-template20150528-1389-3cmius	2015-05-28 13:34:36.233695345 +0000
+54.152.55.247     @@ -1 +1,110 @@
+54.152.55.247     +#!/bin/bash
+54.152.55.247     +#
+54.152.55.247     +# chef-client Startup script for the Chef client
+54.152.55.247     +#
+54.152.55.247     +# chkconfig: - 98 02
+54.152.55.247     +# description: Client component of the Chef systems integration framework.
+54.152.55.247     +
+54.152.55.247     +### BEGIN INIT INFO
+54.152.55.247     +# Provides: chef-client
+54.152.55.247     +# Required-Start: $local_fs $network $remote_fs
+54.152.55.247     +# Required-Stop: $local_fs $network $remote_fs
+54.152.55.247     +# Should-Start: $named $time
+54.152.55.247     +# Should-Stop: $named $time
+54.152.55.247     +# Short-Description: Startup script for the Chef client
+54.152.55.247     +# Description: Client component of the Chef systems integration framework.
+54.152.55.247     +### END INIT INFO
+54.152.55.247     +
+54.152.55.247     +# Source function library
+54.152.55.247     +. /etc/init.d/functions
+54.152.55.247     +
+54.152.55.247     +exec="/usr/bin/chef-client"
+54.152.55.247     +prog="chef-client"
+54.152.55.247     +
+54.152.55.247     +[ -e /etc/sysconfig/$prog ] && . /etc/sysconfig/$prog
+54.152.55.247     +
+54.152.55.247     +config=${CONFIG-/etc/chef/client.rb}
+54.152.55.247     +pidfile=${PIDFILE-/var/run/chef/client.pid}
+54.152.55.247     +lockfile=${LOCKFILE-/var/lock/subsys/$prog}
+54.152.55.247     +interval=${INTERVAL-1800}
+54.152.55.247     +splay=${SPLAY-20}
+54.152.55.247     +options=${OPTIONS-}
+54.152.55.247     +
+54.152.55.247     +start() {
+54.152.55.247     +    [ -x $exec ] || exit 5
+54.152.55.247     +    [ -f $config ] || exit 6
+54.152.55.247     +    echo -n $"Starting $prog: "
+54.152.55.247     +    daemon $exec -d -c "$config" -P "$pidfile" -i "$interval" -s "$splay" "$options"
+54.152.55.247     +    retval=$?
+54.152.55.247     +    echo
+54.152.55.247     +    [ $retval -eq 0 ] && touch $lockfile
+54.152.55.247     +    return $retval
+54.152.55.247     +}
+54.152.55.247     +
+54.152.55.247     +stop() {
+54.152.55.247     +    echo -n $"Stopping $prog: "
+54.152.55.247     +    killproc -p $pidfile $exec
+54.152.55.247     +    retval=$?
+54.152.55.247     +    echo
+54.152.55.247     +    [ $retval -eq 0 ] && rm -f $lockfile
+54.152.55.247     +    return $retval
+54.152.55.247     +}
+54.152.55.247     +
+54.152.55.247     +restart () {
+54.152.55.247     +    stop
+54.152.55.247     +    start
+54.152.55.247     +}
+54.152.55.247     +
+54.152.55.247     +reload() {
+54.152.55.247     +    echo -n $"Reloading $prog: "
+54.152.55.247     +    killproc -p $pidfile $exec -HUP
+54.152.55.247     +    retval=$?
+54.152.55.247     +    echo
+54.152.55.247     +    return $retval
+54.152.55.247     +}
+54.152.55.247     +
+54.152.55.247     +force_reload() {
+54.152.55.247     +    restart
+54.152.55.247     +}
+54.152.55.247     +
+54.152.55.247     +rh_status() {
+54.152.55.247     +    # run checks to determine if the service is running or use generic status
+54.152.55.247     +    status -p $pidfile $prog
+54.152.55.247     +}
+54.152.55.247     +
+54.152.55.247     +rh_status_q() {
+54.152.55.247     +    rh_status >/dev/null 2>&1
+54.152.55.247     +}
+54.152.55.247     +
+54.152.55.247     +case "$1" in
+54.152.55.247     +    start)
+54.152.55.247     +        rh_status_q && exit 0
+54.152.55.247     +        $1
+54.152.55.247     +        ;;
+54.152.55.247     +    stop)
+54.152.55.247     +        rh_status_q || exit 0
+54.152.55.247     +        $1
+54.152.55.247     +        ;;
+54.152.55.247     +    restart)
+54.152.55.247     +        $1
+54.152.55.247     +        ;;
+54.152.55.247     +    reload)
+54.152.55.247     +        rh_status_q || exit 7
+54.152.55.247     +        $1
+54.152.55.247     +        ;;
+54.152.55.247     +    force-reload)
+54.152.55.247     +        force_reload
+54.152.55.247     +        ;;
+54.152.55.247     +    status)
+54.152.55.247     +        rh_status
+54.152.55.247     +        ;;
+54.152.55.247     +    condrestart|try-restart)
+54.152.55.247     +        rh_status_q || exit 0
+54.152.55.247     +        restart
+54.152.55.247     +        ;;
+54.152.55.247     +    *)
+54.152.55.247     +        echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|reload|force-reload}"
+54.152.55.247     +        exit 2
+54.152.55.247     +esac
+54.152.55.247     +exit $?
+54.152.55.247     - change mode from '' to '0755'
+54.152.55.247   * template[/etc/sysconfig/chef-client] action create
+54.152.55.247     - create new file /etc/sysconfig/chef-client
+54.152.55.247     - update content in file /etc/sysconfig/chef-client from none to ec7de1
+54.152.55.247     --- /etc/sysconfig/chef-client	2015-05-28 13:34:36.270695345 +0000
+54.152.55.247     +++ /tmp/chef-rendered-template20150528-1389-s900xs	2015-05-28 13:34:36.270695345 +0000
+54.152.55.247     @@ -1 +1,15 @@
+54.152.55.247     +# Configuration file for the chef-client service
+54.152.55.247     +
+54.152.55.247     +CONFIG=/etc/chef/client.rb
+54.152.55.247     +PIDFILE=/var/run/chef/client.pid
+54.152.55.247     +#LOCKFILE=/var/lock/subsys/chef-client
+54.152.55.247     +# Sleep interval between runs.
+54.152.55.247     +# This value is in seconds.
+54.152.55.247     +INTERVAL=1800
+54.152.55.247     +# Maximum amount of random delay before starting a run. Prevents every client
+54.152.55.247     +# from contacting the server at the exact same time.
+54.152.55.247     +# This value is in seconds.
+54.152.55.247     +SPLAY=300
+54.152.55.247     +# Any additional chef-client options.
+54.152.55.247     +OPTIONS=""
+54.152.55.247     - change mode from '' to '0644'
+54.152.55.247   * service[chef-client] action enable
+54.152.55.247     - enable service service[chef-client]
+54.152.55.247   * service[chef-client] action start
+54.152.55.247     - start service service[chef-client]
+54.152.55.247 Recipe: myapache::default
+54.152.55.247   * yum_package[httpd] action install
+54.152.55.247     - install version 2.2.15-39.el6.centos of package httpd
+54.152.55.247   * template[/etc/httpd/conf/httpd.conf] action create
+54.152.55.247     - update content in file /etc/httpd/conf/httpd.conf from beb8a6 to b0466d
+54.152.55.247     --- /etc/httpd/conf/httpd.conf	2014-08-15 06:57:48.000000000 +0000
+54.152.55.247     +++ /tmp/chef-rendered-template20150528-1389-36ecm	2015-05-28 13:34:49.263695345 +0000
+54.152.55.247     @@ -133,7 +133,7 @@
+54.152.55.247      # prevent Apache from glomming onto all bound IP addresses (0.0.0.0)
+54.152.55.247      #
+54.152.55.247      #Listen 12.34.56.78:80
+54.152.55.247     -Listen 80
+54.152.55.247     +Listen 8080
+54.152.55.247      
+54.152.55.247      #
+54.152.55.247      # Dynamic Shared Object (DSO) Support
+54.152.55.247     - change mode from '0644' to '0400'
+54.152.55.247   * service[httpd] action enable
+54.152.55.247     - enable service service[httpd]
+54.152.55.247   * service[httpd] action start
+54.152.55.247     - start service service[httpd]
+54.152.55.247   * template[/var/www/html/index.html] action create
+54.152.55.247     - create new file /var/www/html/index.html
+54.152.55.247     - update content in file /var/www/html/index.html from none to 52c245
+54.152.55.247     --- /var/www/html/index.html	2015-05-28 13:34:49.883695346 +0000
+54.152.55.247     +++ /tmp/chef-rendered-template20150528-1389-1pz4m36	2015-05-28 13:34:49.883695346 +0000
+54.152.55.247     @@ -1 +1,12 @@
+54.152.55.247     +<h1>Hello, Chefs!</h1>
+54.152.55.247     +
+54.152.55.247     +<p>
+54.152.55.247     +This is a centos 6.5 server with 604488kB RAM. 
+54.152.55.247     +<br><br>
+54.152.55.247     +The CentOS servers in your organization have the following FQDN/IP Addresses:
+54.152.55.247     + <ul>
+54.152.55.247     +   <li>ip-172-31-19-42.ec2.internal / 52.4.83.140</li>
+54.152.55.247     +   <li>ip-172-31-19-42.ec2.internal / 52.4.83.140</li>
+54.152.55.247     + </ul>
+54.152.55.247     +</p>
+54.152.55.247     - change mode from '' to '0444'
+54.152.55.247 Recipe: chef-client::init_service
+54.152.55.247   * service[chef-client] action restart
+54.152.55.247     - restart service service[chef-client]
+54.152.55.247 Recipe: myapache::default
+54.152.55.247   * service[httpd] action restart
+54.152.55.247     - restart service service[httpd]
+54.152.55.247 
+54.152.55.247 Running handlers:
+54.152.55.247 Running handlers complete
+54.152.55.247 Chef Client finished, 16/17 resources updated in 27.490007057 seconds
+
+
+// Clear run_list for first node as well
+$ knife node run_list set mynode "role[webserver], role[loadbalancer]"
+mynode:
+  run_list:
+    role[webserver]
+    role[loadbalancer]
+
+
+// After sudo chef-client on both nodes:
+
+$ knife status
+3 hours ago, mynode2, centos 6.5.
+9 minutes ago, mywebnode1, centos 6.5.
+0 minutes ago, mynode, centos 6.5.
+
+$ knife status -l
+3 hours ago, mynode2, ec2-52-4-83-140.compute-1.amazonaws.com, 52.4.83.140, centos 6.5.
+9 minutes ago, mywebnode1, ec2-54-152-55-247.compute-1.amazonaws.com, 54.152.55.247, centos 6.5.
+1 minute  ago, mynode, ec2-52-4-83-140.compute-1.amazonaws.com, 52.4.83.140, centos 6.5.
+
+$ while true;do curl 2>/dev/null http://52.4.83.140 |grep -o "My .*[0-9]";sleep 2;done
+My IP Address is 54.152.55.247
+My IP Address is 52.4.83.140
+My IP Address is 54.152.55.247
+...
+
+
+// Environments
+// Idea behind it: abstract cookbook contstrains (versions and/or attributes)
+
+$ knife cookbook show myapache
+myapache   0.5.0  0.4.2  0.4.1  0.4.0  0.3.1  0.3.0  0.2.0
+
+$ cat environments/dev.rb 
+name "dev"
+description "For developers!"
+cookbook "myapache", "= 0.4.1"
+override_attributes({
+  "myapache" => {
+    "port" => "8181"
+  }
+})
+
+$ knife environment from file dev.rb
+Updated Environment dev
+
+$ knife environment show dev
+chef_type:           environment
+cookbook_versions:
+  myapache: = 0.4.1
+default_attributes:
+description:         For developers!
+json_class:          Chef::Environment
+name:                dev
+override_attributes:
+  myapache:
+    port: 8181
+
+
+$ knife node environment set mynode dev
+mynode:
+  chef_environment: 
+
+$ knife node show mynode
+Node Name:   mynode
+Environment: dev
+FQDN:        ip-172-31-19-42.ec2.internal
+IP:          52.4.83.140
+Run List:    role[webserver], role[loadbalancer]
+Roles:       webserver, base, loadbalancer
+Recipes:     chef-client::delete_validation, chef-client, myapache, myhaproxy, chef-client::default, chef-client::service, chef-client::init_service, myapache::default, myhaproxy::default
+Platform:    centos 6.5
+Tags:        
+
+$ sudo chef-client --log_level=error
+
+$ sudo chef-client --log_level=info
+\=> it gives the version of cookbooks
+
+
+
+
+### Test Kitchen ###
+
+Based on ruby/Serverspec
+
+
+
+### References ###
+
+ - http://railsware.com/blog/2013/02/21/chef-dos-and-donts/
+ - CIS CentOS 7 benchmark cookbook
+ - Customizing Chef / Jon Cowie
