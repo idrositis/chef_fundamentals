@@ -1,66 +1,64 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Use version 2 of API
-VAGRANTFILE_API_VERSION = "2"
-Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  # CentOS 6.6 needed for full docker support
-  # https://atlas.hashicorp.com/chef/boxes/centos-6.6
-  config.vm.box = "chef/centos-6.6"
+# TODOs:
+# - use Ubuntu for the kitchen/workstation VM
+# - import custom folder per VM (for own recipies/customization files, etc.)
+# - import chef gpg-keys (https://tickets.opscode.com/browse/CHEF-2803)
 
-  # Hostname
-  config.vm.hostname = "client.example.com"
+# vms/
+#  ├── kitchen: workstation VM with ChefDK
+#  ├── server : chef-server VM
+#  └── node1  : node/client VM
+Vagrant.configure(2) do |config|
 
-  # Enable check for updates
-  config.vm.box_check_update = true
+  # VM kitchen config
+  config.vm.define "kitchen" do |kitchen|
+    # Stick with CentOS 6.x for now
+    kitchen.vm.box = "chef/centos-6.6"
 
-  # Create a forwarded port mapping which allows access to a specific port
-  # within the machine from a port on the host machine. In the example below,
-  # accessing "localhost:8080" will access port 80 on the guest machine.
-  # config.vm.network "forwarded_port", guest: 80, host: 8080
+    kitchen.vm.hostname = "kitchen.example.com"
+    #kitchen.vm.box_check_update = true
 
-  # Create a private network, which allows host-only access to the machine
-  # using a specific IP.
-  # config.vm.network "private_network", ip: "192.168.33.10"
+    # Use bridged/public network (DHCP)
+    # (possibly avoid vagrant poping-up to select interface for the bridge)
+    kitchen.vm.network "public_network", bridge: 'wlan0'
+    #kitchen.vm.network "public_network", bridge: 'en1: Wi-Fi (AirPort)'
+    #kitchen.vm.network "public_network"
 
-  # Use bridged/public network (DHCP)
-  # Alternatives (to possibly avoid vagrant poping-up to select interface for
-  # the bridge):
-  config.vm.network "public_network", bridge: 'wlan0'
-  #config.vm.network "public_network", bridge: 'en1: Wi-Fi (AirPort)'
-  #config.vm.network "public_network"
+    # Just VirtualBox provider for now
+    kitchen.vm.provider "virtualbox" do |vb|
+      vb.gui = true
+      vb.cpus = "1"
+      vb.memory = "1024"
+    end
 
-  # Share an additional folder to the guest VM. The first argument is
-  # the path on the host to the actual folder. The second argument is
-  # the path on the guest to mount the folder. And the optional third
-  # argument is a set of non-required options.
-  # config.vm.synced_folder "../data", "/vagrant_data"
-
-  # Setup VirtualBox provider
-  config.vm.provider "virtualbox" do |vb|
-    # Display the VirtualBox GUI when booting the machine
-    vb.gui = true
-
-    # Customize the amount of memory and the CPUs on the VM:
-    vb.cpus = "1"
-    vb.memory = "1024"
+    # Complete provisioning with CHEF
+    kitchen.vm.provision :shell, path: "bootstrap_kitchen.sh" 
   end
 
-  # Define a Vagrant Push strategy for pushing to Atlas. Other push strategies
-  # such as FTP and Heroku are also available. See the documentation at
-  # https://docs.vagrantup.com/v2/push/atlas.html for more information.
-  # config.push.define "atlas" do |push|
-  #   push.app = "YOUR_ATLAS_USERNAME/YOUR_APPLICATION_NAME"
-  # end
+  # VM node1 config
+  config.vm.define "node1" do |node1|
+    # Stick with CentOS 6.x for now
+    node1.vm.box = "chef/centos-6.6"
 
-  # Enable provisioning with a shell script. Additional provisioners such as
-  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
-  # documentation for more information about their specific syntax and use.
-  # config.vm.provision "shell", inline: <<-SHELL
-  #   sudo apt-get update
-  #   sudo apt-get install -y apache2
-  # SHELL
+    node1.vm.hostname = "node1.example.com"
+    #node1.vm.box_check_update = true
 
-  # Complete provisioning with CHEF
-  config.vm.provision :shell, path: "bootstrap_client.sh" 
+    # Use bridged/public network (DHCP)
+    # (possibly avoid vagrant poping-up to select interface for the bridge)
+    node1.vm.network "public_network", bridge: 'wlan0'
+    #node1.vm.network "public_network", bridge: 'en1: Wi-Fi (AirPort)'
+    #node1.vm.network "public_network"
+
+    # Just VirtualBox provider for now
+    node1.vm.provider "virtualbox" do |vb|
+      vb.gui = true
+      vb.cpus = "1"
+      vb.memory = "512"
+    end
+
+    # Complete provisioning with CHEF
+    node1.vm.provision :shell, path: "bootstrap_client.sh" 
+  end
 end
