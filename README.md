@@ -11,8 +11,6 @@ Stuff related to the [CHEF Funadamentals Training](https://www.chef.io/training/
 - [CHEF Funadamentals](https://www.chef.io/training/#fundamentals)
 
 ## TODOs
-0) Add chef-client to node1.
-
 1) Add training examples.
 
 2) Import custom folder per VM (for own recipies/customization files, etc.).
@@ -26,6 +24,4 @@ md5    c19fefcb3d033107e9fbdb3839312584
 sha256 4b7c846a9ad93564cc203a5ac99890431f7d6ad159c424aa89827fd772c9881d
 ```
 
-4) Import chef RPM/gpg-keys (https://tickets.opscode.com/browse/CHEF-2803).
-
-5) Possibly use Ubuntu for the kitchen/workstation VM.
+4) Possibly use Ubuntu for the kitchen/workstation VM.

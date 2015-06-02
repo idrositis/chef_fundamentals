@@ -22,12 +22,12 @@ rpm -qi chefdk &>/dev/null || {
 }
 
 # Create group/user chef
-sudo chef-apply /vagrant/recipe_chef_user.rb
+chef-apply /vagrant/recipe_chef_user.rb
 
 # Enable full-sudo for chef user; needed for docker
-sudo chef-apply /vagrant/recipe_chef_sudo.rb
+chef-apply /vagrant/recipe_chef_sudo.rb
 
 # Echo IP(s)
 for i in 0 1; do
-  echo "IP/eth$i: "$(ip -4 a s eth$i|grep inet|awk '{print $2}'|cut -d'/' -f1)
+  echo "IP/eth$i: "$(ip -4 a s eth$i | grep inet | awk '{print $2}' | cut -d'/' -f1)
 done
