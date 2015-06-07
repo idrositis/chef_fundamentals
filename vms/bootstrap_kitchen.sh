@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Script to setup the kitchen VM
+# Setup the kitchen VM
 
 # Install latest docker instead of the RHEL one
 rpm -qi docker-io &>/dev/null || {
@@ -14,20 +14,14 @@ rpm -qi docker-io &>/dev/null || {
   yum -y install docker-io
 }
 
-# Install ChefDK 
-rpm -qi chefdk &>/dev/null || {
-  echo "Setting up ChefDK ..."
-  rpm --import https://downloads.getchef.com/chef.gpg.key
-  rpm -ihv https://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chefdk-0.6.0-1.el6.x86_64.rpm
-}
+. /vagrant/functions || echo "Sourcing function file failed!"
 
-# Create group/user chef
-chef-apply /vagrant/recipe_chef_user.rb
+kill_respawn_ttys
 
-# Enable full-sudo for chef user; needed for docker
-chef-apply /vagrant/recipe_chef_sudo.rb
+fetch_and_install_chef_rpm chefdk "https://www.opscode.com/chef/metadata-chefdk?v=latest&prerelease=false&nightlies=false&p=el&pv=6&m=x86_64"
 
-# Echo IP(s)
-for i in 0 1; do
-  echo "IP/eth$i: "$(ip -4 a s eth$i | grep inet | awk '{print $2}' | cut -d'/' -f1)
-done
+chef_recipe_apply /vagrant/recipe_chef_user.rb
+
+chef_recipe_apply /vagrant/recipe_chef_sudo.rb
+
+echo_ips

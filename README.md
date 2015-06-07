@@ -9,13 +9,14 @@ Stuff related to the [CHEF Funadamentals Training](https://www.chef.io/training/
 
 ## References
 - [CHEF Funadamentals](https://www.chef.io/training/#fundamentals)
+- [Omnitruck API](https://docs.chef.io/api_omnitruck.html)
 
 ## TODOs
 1) Add training examples.
 
 2) Import custom folder per VM (for own recipies/customization files, etc.).
 
-3) Avoid hard-coding ChefDK rpm URL; use an equivalent of the following instead:
+3) Avoid hard-coding Chef-Server rpm URL; use an equivalent of the following instead:
 
 ```
 $ curl 'https://www.opscode.com/chef/metadata?v=12&prerelease=false&nightlies=false&p=el&pv=6&m=x86_64'
@@ -25,3 +26,5 @@ sha256 4b7c846a9ad93564cc203a5ac99890431f7d6ad159c424aa89827fd772c9881d
 ```
 
 4) Possibly use Ubuntu for the kitchen/workstation VM.
+
+5) Install extra RPMs through functions; e.g. docker

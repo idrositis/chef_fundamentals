@@ -1,0 +1,49 @@
+
+# Refresh terminals to show changes
+function kill_respawn_ttys() {
+  pkill -15 mingetty
+  return $?
+}
+
+# Fetch and install an RPM from CHEF through a metadata URL
+# NOTE: on chef-client, only the RPM is installed; the service isn't enabled 
+function fetch_and_install_chef_rpm() {
+  local rpm_name=$1
+  local metadata_url=$2
+  local tmp_rpm="/tmp/chef_tmp.rpm"
+
+  rpm -qi $rpm_name &>/dev/null || {
+    echo -e "Importing CHEF RPM key... \c" && rpm --quiet --import https://downloads.getchef.com/chef.gpg.key || echo "Failed!"
+
+    rpm_el6_x64=$(curl -q 2>/dev/null "$metadata_url")
+    if [ $? -eq 0 ]; then
+      rpm_url=$(echo $rpm_el6_x64|awk '{print $2}')
+      rpm_md5=$(echo $rpm_el6_x64|awk '{print $4}')
+      echo "Downloading ${rpm_url##*/}... " && wget -q -O - "$rpm_url" > $tmp_rpm || echo "Failed!-("
+      echo "Verifying checksum... " && md5sum $tmp_rpm | grep -qw $rpm_md5 || echo "Failed!-("
+      echo "Installing ${rpm_url##*/}... " && yum -y --quiet localinstall $tmp_rpm || echo "Failed!-("
+    fi
+  }
+}
+
+# Echo IP(s)
+function echo_ips() {
+  for i in 0 1; do
+#    echo "IP/eth$i: "$(ip -4 a s eth$i | grep inet | awk '{print $2}' | cut -d'/' -f1)
+    echo "IP/eth$i: "$(ip -4 a s eth$i | grep inet | awk '{print $2}')
+  done
+}
+
+# Apply a recipe iff chef-apply available; echo a warning otherwise
+function chef_recipe_apply() {
+  local recipe=$1
+
+  which &>/dev/null chef-apply
+  if [ $? -ne 0 ]; then
+    echo "[WARN] chef-apply not installed: skipping '${recipe##*/}'!"
+    return 1
+  else
+    chef-apply $recipe
+    return $?
+  fi
+}
