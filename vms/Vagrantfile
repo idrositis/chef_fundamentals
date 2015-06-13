@@ -60,5 +60,10 @@ Vagrant.configure(2) do |config|
 
     # Complete provisioning with CHEF
     node1.vm.provision :shell, path: "bootstrap_client.sh" 
+
+    # CHEF directory
+    node1.vm.synced_folder "../chef/", "/vagrant/chef",
+      owner: "vagrant",
+      group: "vagrant"
   end
 end

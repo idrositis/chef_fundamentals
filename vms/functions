@@ -29,7 +29,6 @@ function fetch_and_install_chef_rpm() {
 # Echo IP(s)
 function echo_ips() {
   for i in 0 1; do
-#    echo "IP/eth$i: "$(ip -4 a s eth$i | grep inet | awk '{print $2}' | cut -d'/' -f1)
     echo "IP/eth$i: "$(ip -4 a s eth$i | grep inet | awk '{print $2}')
   done
 }
@@ -43,7 +42,8 @@ function chef_recipe_apply() {
     echo "[WARN] chef-apply not installed: skipping '${recipe##*/}'!"
     return 1
   else
-    chef-apply $recipe
+    echo "chef-apply $recipe ..."
+    chef-apply $recipe --log_level error
     return $?
   fi
 }

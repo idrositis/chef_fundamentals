@@ -6,6 +6,10 @@ Stuff related to the [CHEF Funadamentals Training](https://www.chef.io/training/
 - `vms/`: a set of Vagrant VMs that can run the course.
     - **kitchen**: workstation VM with [ChefDK](https://downloads.chef.io/chef-dk)
       that manages the chef-code.
+    - **node1**: VM with client tools installed (e.g. `chef-apply`, etc.)
+
+## Examples
+- Example #1: customise  `/etc/motd` file on a linux node
 
 ## References
 - [CHEF Funadamentals](https://www.chef.io/training/#fundamentals)
