@@ -1,18 +1,46 @@
 # CHEF Fundamentals
 Stuff related to the [CHEF Funadamentals Training](https://www.chef.io/training/#fundamentals) Course.
 
+This repository will help you play around with [CHEF](https://www.chef.io/chef/).
+You will be able to spin-up a bunch of VMs, using [vagrant](https://www.vagrantup.com).
+All needed tools plus the example recipes will be available in the VMs.
+
+
 ## Contents
-- `notes_raw.txt`: some raw notes from the training.
+- `notes_raw.txt`: some raw notes from [CHEF Funadamentals Training](https://www.chef.io/training/#fundamentals) training.
+- `chef/`: [CHEF](https://www.chef.io/chef/) recipies and examples. This directory will be mounted under `/chef` on all VMs.
 - `vms/`: a set of Vagrant VMs that can run the course.
-    - **kitchen**: workstation VM with [ChefDK](https://downloads.chef.io/chef-dk)
+    - **devbox**: workstation VM with [ChefDK](https://downloads.chef.io/chef-dk)
       that manages the chef-code.
-    - **node1**: VM with client tools installed (e.g. `chef-apply`, etc.)
+    - **node1**: VM with client tools installed (i.e. `chef-apply`)
+
 
 ## Examples
-- Example #1: customise  `/etc/motd` file on a linux node
+
+### Example #1 - Local Configuration Management
+
+Objective: customise `/etc/motd` file on a linux node.
+
+Prerequisites:
+- `chef-apply` installed on the node
+- `sudo chef-apply` privilege granted for the user
+- chef-recipe locally available 
+
+Tools: [`chef-apply`](https://docs.chef.io/ctl_chef_apply.html)
+
+Run the example:
+  1. Spin-up *devbox* VM (from `vms/` directory): `vagrant up devbox`
+  2. SSH to test box: `vagrant ssh devbox`
+  3. Use `chef` user: `sudo su - chef`
+  4. Check local motd: `ls -l /etc/motd`
+  5. Update motd using the recipe: `sudo chef-apply /chef/example1/custom_motd.rb`
+  6. Verify update: `ls -l /etc/motd`
+  7. Check backup file (created by `chef-apply`): `find /var/chef/backup -iname 'motd*'`
+
 
 ## References
 - [CHEF Funadamentals](https://www.chef.io/training/#fundamentals)
+- [`chef-apply`](https://docs.chef.io/ctl_chef_apply.html)
 - [Omnitruck API](https://docs.chef.io/api_omnitruck.html)
 
 ## TODOs
@@ -29,6 +57,6 @@ md5    c19fefcb3d033107e9fbdb3839312584
 sha256 4b7c846a9ad93564cc203a5ac99890431f7d6ad159c424aa89827fd772c9881d
 ```
 
-4) Possibly use Ubuntu for the kitchen/workstation VM.
+4) Possibly use Ubuntu for the devbox/workstation VM.
 
 5) Install extra RPMs through functions; e.g. docker

@@ -2,39 +2,44 @@
 # vi: set ft=ruby :
 
 # TODOs:
-# - use Ubuntu for the kitchen/workstation VM
+# - use Ubuntu for the devbox/workstation VM
 # - import custom folder per VM (for own recipies/customization files, etc.)
 # - import chef gpg-keys (https://tickets.opscode.com/browse/CHEF-2803)
 
 # vms/
-#  ├── kitchen: workstation VM with ChefDK
+#  ├── devbox: workstation VM with ChefDK
 #  ├── server : chef-server VM
 #  └── node1  : node/client VM
 Vagrant.configure(2) do |config|
 
-  # VM kitchen config
-  config.vm.define "kitchen" do |kitchen|
+  # VM devbox config
+  config.vm.define "devbox" do |devbox|
     # Stick with CentOS 6.x for now
-    kitchen.vm.box = "chef/centos-6.6"
+    devbox.vm.box = "chef/centos-6.6"
 
-    kitchen.vm.hostname = "kitchen.example.com"
-    #kitchen.vm.box_check_update = true
+    devbox.vm.hostname = "devbox.example.com"
+    #devbox.vm.box_check_update = true
 
     # Use bridged/public network (DHCP)
     # (possibly avoid vagrant poping-up to select interface for the bridge)
-    kitchen.vm.network "public_network", bridge: 'wlan0'
-    #kitchen.vm.network "public_network", bridge: 'en1: Wi-Fi (AirPort)'
-    #kitchen.vm.network "public_network"
+    devbox.vm.network "public_network", bridge: 'wlan0'
+    #devbox.vm.network "public_network", bridge: 'en1: Wi-Fi (AirPort)'
+    #devbox.vm.network "public_network"
 
     # Just VirtualBox provider for now
-    kitchen.vm.provider "virtualbox" do |vb|
+    devbox.vm.provider "virtualbox" do |vb|
       vb.gui = true
       vb.cpus = "1"
       vb.memory = "1024"
     end
 
     # Complete provisioning with CHEF
-    kitchen.vm.provision :shell, path: "bootstrap_kitchen.sh" 
+    devbox.vm.provision :shell, path: "bootstrap_devbox.sh" 
+
+    # CHEF directory
+    devbox.vm.synced_folder "../chef/", "/chef",
+      owner: "vagrant",
+      group: "vagrant"
   end
 
   # VM node1 config
@@ -62,7 +67,7 @@ Vagrant.configure(2) do |config|
     node1.vm.provision :shell, path: "bootstrap_client.sh" 
 
     # CHEF directory
-    node1.vm.synced_folder "../chef/", "/vagrant/chef",
+    node1.vm.synced_folder "../chef/", "/chef",
       owner: "vagrant",
       group: "vagrant"
   end
