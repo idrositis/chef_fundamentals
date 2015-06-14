@@ -1,8 +1,10 @@
 # Custom bash prompt
-#
-file "/etc/profile.d/custom_ps1_chef.sh" do
+
+profile_file = "custom_ps1_chef.sh"
+
+file "/etc/profile.d/#{profile_file}" do
   action :create
-  content "# Preferable prompt for chef\nexport PS1='\u@\h:\w$ '\n"
+  content IO.read("/chef/files/#{profile_file}")
   mode "0644"
   owner "root"
   group "root"
