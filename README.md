@@ -34,8 +34,11 @@ Run the example:
   3. Use `chef` user: `sudo su - chef`
   4. Check local motd: `ls -l /etc/motd`
   5. Update motd using the recipe: `sudo chef-apply /chef/example1/custom_motd.rb`
-  6. Verify update: `ls -l /etc/motd`
+  6. Verify update: `ls -l /etc/motd`; logout and login on the VM will make the updated motd to show up.
   7. Check backup file (created by `chef-apply`): `find /var/chef/backup -iname 'motd*'`
+
+Beyond:
+  - Feel free to change the recipe and apply again.
 
 
 ## References
