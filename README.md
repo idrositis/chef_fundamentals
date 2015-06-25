@@ -28,7 +28,7 @@ Prerequisites:
 
 Tools: [`chef-apply`](https://docs.chef.io/ctl_chef_apply.html)
 
-More [>> ...](tree/master/chef/example1)
+I want to try [example #1 ...](chef/example1)
 
 
 
