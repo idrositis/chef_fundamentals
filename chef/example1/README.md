@@ -19,11 +19,13 @@ Run the example:
   7. Check backup file (created by `chef-apply`): `find /var/chef/backup -iname 'motd*'`
 
 
-## Beyond:
+## Further On
 
-Change/play-around the recipe file and apply again.
+Play around with the recipe file and apply again.
 
 
 ## References
 
+- [Running chef-client in local-mode](http://docs.chef.io/ctl_chef_client.html#run-in-local-mode)
 - [`chef-apply`](https://docs.chef.io/ctl_chef_apply.html)
+- [`chef-solo`](https://docs.chef.io/chef_solo.html)

@@ -38,7 +38,9 @@ I want to try [example #1 ...](chef/example1)
 - [Omnitruck API](https://docs.chef.io/api_omnitruck.html)
 
 ## TODOs
-1) Add training examples.
+0) Enable debug mode in `vagrant up` for VMs.
+
+1) Add more training examples.
 
 2) Import custom folder per VM (for own recipies/customization files, etc.).
 
@@ -52,5 +54,3 @@ sha256 4b7c846a9ad93564cc203a5ac99890431f7d6ad159c424aa89827fd772c9881d
 ```
 
 4) Possibly use Ubuntu for the devbox/workstation VM.
-
-5) Install extra RPMs through functions; e.g. docker
