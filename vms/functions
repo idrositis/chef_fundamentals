@@ -1,4 +1,4 @@
-CHEF_GPG_KEY_URL="https://downloads.getchef.com/chef.gpg.key"
+CHEF_GPG_KEY_URL="https://downloads.chef.io/packages-chef-io-public.key"
 
 # Refresh terminals to show changes
 function kill_respawn_ttys() {
