@@ -1,3 +1,4 @@
+CHEF_GPG_KEY_URL="https://downloads.getchef.com/chef.gpg.key"
 
 # Refresh terminals to show changes
 function kill_respawn_ttys() {
@@ -13,7 +14,7 @@ function fetch_and_install_chef_rpm() {
   local tmp_rpm="/tmp/chef_tmp.rpm"
 
   rpm -qi $rpm_name &>/dev/null || {
-    echo -e "Importing CHEF RPM key... \c" && rpm --quiet --import https://downloads.getchef.com/chef.gpg.key || echo "Failed!"
+    echo -e "Importing CHEF RPM key... \c" && rpm --quiet --import "$CHEF_GPG_KEY_URL" || echo "Failed!"
 
     rpm_el6_x64=$(curl -q 2>/dev/null "$metadata_url")
     if [ $? -eq 0 ]; then
