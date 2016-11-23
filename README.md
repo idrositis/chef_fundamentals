@@ -8,8 +8,12 @@ All needed tools plus the example recipes will be available in the VMs.
 
 ## Contents
 - `notes_raw.txt`: some raw notes from [CHEF Funadamentals Training](https://www.chef.io/training/#fundamentals) training.
+
 - `chef/`: [CHEF](https://www.chef.io/chef/) recipies and examples. This directory will be mounted under `/chef` on all VMs.
+
 - `vms/`: a set of Vagrant VMs that can run the course.
+   To spin-up any of these VMs, you can run `vagrant up <vm_name>` under this directory. 
+   Available VMs as per the list below:
     - **devbox**: workstation VM with [ChefDK](https://downloads.chef.io/chef-dk)
       that manages the chef-code.
     - **node1**: VM with client tools installed (i.e. `chef-apply`)
