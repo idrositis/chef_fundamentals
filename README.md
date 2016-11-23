@@ -26,13 +26,14 @@ All needed tools plus the example recipes will be available in the VMs.
 Objective: customise `/etc/motd` file on a linux node.
 
 Prerequisites:
-- `chef-apply` installed on the node
-- `sudo chef-apply` privilege granted for the user
-- chef-recipe locally available 
+
+  - binary `chef-apply` needs to be installed on the node
+  - `sudo chef-apply` should be privilege granted for the user
+  - the actuall chef-recipe (source file) needs to be locally available 
 
 Tools: [`chef-apply`](https://docs.chef.io/ctl_chef_apply.html)
 
-I want to try [example #1 ...](chef/example1)
+Try [example #1 ...](chef/example1)
 
 
 

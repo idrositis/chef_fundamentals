@@ -10,6 +10,7 @@ Prerequisites:
 Tools: [`chef-apply`](https://docs.chef.io/ctl_chef_apply.html)
 
 Run the example:
+
   1. Spin-up *devbox* VM (from `vms/` directory): `vagrant up devbox`
   2. SSH to test box: `vagrant ssh devbox`
   3. Use `chef` user: `sudo su - chef`

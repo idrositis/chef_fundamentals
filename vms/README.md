@@ -2,7 +2,7 @@
 
 A set of [vagrant](https://www.vagrantup.com) VMs that might help playing around with
 the course. To spin-up any of these VMs, you can run `vagrant up <vm_name>` under this
-directory. 
+directory.
 
 Available VMs as per the list below:
 
